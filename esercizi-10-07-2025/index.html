@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EPICODE – Pexels API</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+
+  .jumbotron { 
+    padding: 3rem 0; 
+    background-color: rgb(221, 220, 220); 
+  }
+  .jumbotron .container { 
+    max-width: 40rem; 
+  }
+  .card-img-top { 
+    cursor: pointer; 
+    height: 200px; 
+    object-fit: cover; 
+  }
+  .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  </style>
+</head>
+<body>
+  <header>
+  <nav class="navbar navbar-dark bg-dark">
+  <div class="container-fluid justify-content-between">
+  <a href="#" class="navbar-brand"><strong>Album</strong></a>
+  </div>
+  </nav>
+  </header>
+
+  <main role="main">
+  <section class="jumbotron text-center">
+  <div class="container">
+  <h1 class="jumbotron-heading">Album API example</h1>
+  <input type="text" id="searchInput" class="form-control my-3" placeholder="Search for images..." />
+  <p>
+  <button id="loadImages" class="btn btn-primary">Load Images</button>
+  <button id="loadSecondaryImages" class="btn btn-secondary">Load Secondary Images</button>
+  </p>
+  </div>
+  </section>
+
+  <div class="album py-5 bg-light">
+  <div class="container">
+  <div id="imageContainer" class="row row-cols-1 row-cols-md-3 g-4"></div>
+  </div>
+  </div>
+  </main>
+
+  <footer class="text-muted text-center py-3">
+  <div class="container"><p><a href="#">Back to top</a></p></div>
+  </footer>
+
+  <script>
+  const API_KEY = 'dr49fQoiXOUk5gRIXalxtk1aGErLezXvf8XY9eL3vJyFW1abIuY3hNuA';
+  const container = document.getElementById('imageContainer');
+
+  function createCard(photo) {
+  const col = document.createElement('div');
+  col.className = 'col';
+  col.innerHTML = `
+  <div class="card h-100 shadow-sm">
+  <img src="${photo.src.medium}" class="card-img-top" data-id="${photo.id}" />
+  <div class="card-body">
+  <h5 class="card-title" data-id="${photo.id}">${photo.photographer}</h5>
+  <p class="card-text">${photo.alt || ''}</p>
+  <div class="d-flex justify-content-between align-items-center">
+  <div class="btn-group">
+  <button class="btn btn-sm btn-outline-secondary view-btn" data-id="${photo.id}">View</button>
+  <button class="btn btn-sm btn-outline-secondary hide-btn">Hide</button>
+  </div>
+  <small class="text-muted">${photo.id}</small>
+  </div>
+  </div>
+  </div>`;
+
+  col.querySelector('.hide-btn').addEventListener('click', () => col.remove());
+  col.querySelectorAll('.card-img-top, .card-title, .view-btn').forEach(el => {
+  el.addEventListener('click', () => showDetail(photo));
+  });
+  return col;
+  }
+
+  async function showImages(query) {
+  const res = await fetch(`https://api.pexels.com/v1/search?query=${query}`, {
+  headers: { Authorization: API_KEY }
+  });
+  const data = await res.json();
+  container.innerHTML = '';
+  data.photos.forEach(photo => container.appendChild(createCard(photo)));
+  }
+
+  function showDetail(photo) {
+  container.innerHTML = `
+  <div class="col-12 text-center">
+  <img src="${photo.src.large}" class="img-fluid mb-3"/>
+  <h2>${photo.photographer}</h2>
+  <p><a href="${photo.photographer_url}" target="_blank">Photographer’s profile</a></p>
+  <div class="mt-4"><button class="btn btn-primary" onclick="location.reload()">Back</button></div>
+  </div>`;
+  }
+
+  document.getElementById('loadImages').addEventListener('click', () => showImages('hamsters'));
+  document.getElementById('loadSecondaryImages').addEventListener('click', () => showImages('tigers'));
+  document.getElementById('searchInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') showImages(e.target.value);
+  });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
